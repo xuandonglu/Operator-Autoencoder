@@ -1,0 +1,125 @@
+{
+  "device": "cuda",
+  "n_samples": 1000,
+  "n_times": 501,
+  "predicted_frames": 501000,
+  "start_index": 4000,
+  "repeats": 3,
+  "warmup": 1,
+  "batch_size": 1000,
+  "ae_decode_batch": 65536,
+  "timing_scope": "GPU model stages only; HDF5 loading is excluded.",
+  "results": {
+    "foae": {
+      "encoding_s": {
+        "mean": 0.005607533307435612,
+        "std": 0.0005291411455074976,
+        "runs": [
+          0.005709299934096634,
+          0.005034900037571788,
+          0.006078399950638413
+        ]
+      },
+      "latent_inference_s": {
+        "mean": 11.189304333335409,
+        "std": 0.15417479805148138,
+        "runs": [
+          11.363274300005287,
+          11.06959770002868,
+          11.135040999972261
+        ]
+      },
+      "reconstruction_s": {
+        "mean": 0.003511700041902562,
+        "std": 0.00014778449667297633,
+        "runs": [
+          0.0033997000427916646,
+          0.0036792000755667686,
+          0.0034562000073492527
+        ]
+      },
+      "encoded_inputs": 1000,
+      "predicted_trajectories": 1000,
+      "predicted_frames": 501000,
+      "throughput": {
+        "encoded_inputs_per_s": 178331.53102701966,
+        "predicted_trajectories_per_s": 89.3710609890893,
+        "reconstructed_frames_per_s": 142665943.56634435
+      }
+    },
+    "oae": {
+      "encoding_s": {
+        "mean": 0.0019018333793307345,
+        "std": 6.406497369848026e-05,
+        "runs": [
+          0.001874700072221458,
+          0.00197500002104789,
+          0.001855800044722855
+        ]
+      },
+      "latent_inference_s": {
+        "mean": 11.149654433325244,
+        "std": 0.0404686387416835,
+        "runs": [
+          11.178893400006928,
+          11.166602700017393,
+          11.10346719995141
+        ]
+      },
+      "reconstruction_s": {
+        "mean": 0.0035027666793515286,
+        "std": 0.00011166837414486121,
+        "runs": [
+          0.0035312999971210957,
+          0.0033796000061556697,
+          0.00359740003477782
+        ]
+      },
+      "encoded_inputs": 1000,
+      "predicted_trajectories": 1000,
+      "predicted_frames": 501000,
+      "throughput": {
+        "encoded_inputs_per_s": 525808.4177447266,
+        "predicted_trajectories_per_s": 89.68887833968165,
+        "reconstructed_frames_per_s": 143029794.9770239
+      }
+    },
+    "ae": {
+      "encoding_s": {
+        "mean": 0.0019599999844407043,
+        "std": 0.0003089156346442081,
+        "runs": [
+          0.001783300074748695,
+          0.001779999933205545,
+          0.0023166999453678727
+        ]
+      },
+      "latent_inference_s": {
+        "mean": 11.17878516666436,
+        "std": 0.13590095929606363,
+        "runs": [
+          11.321375100058503,
+          11.050743800005876,
+          11.1642365999287
+        ]
+      },
+      "reconstruction_s": {
+        "mean": 0.03960686669840167,
+        "std": 0.00011986055624059207,
+        "runs": [
+          0.03948609996587038,
+          0.039725800044834614,
+          0.039608700084500015
+        ]
+      },
+      "encoded_inputs": 1000,
+      "predicted_trajectories": 1000,
+      "predicted_frames": 501000,
+      "throughput": {
+        "encoded_inputs_per_s": 510204.0856828654,
+        "predicted_trajectories_per_s": 89.4551585964855,
+        "reconstructed_frames_per_s": 12649321.740470266
+      }
+    }
+  }
+}
