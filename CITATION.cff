@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "Please cite the accompanying article when using this code."
+title: "Decoder-free operator autoencoder for reduced-order modeling of dynamical systems"
+type: software
+authors:
+  - family-names: Lu
+    given-names: Xuandong
+  - family-names: Liu
+    given-names: Yongming
+preferred-citation:
+  type: article
+  title: "Decoder-free operator autoencoder for reduced-order modeling of dynamical systems"
+  authors:
+    - family-names: Lu
+      given-names: Xuandong
+    - family-names: Liu
+      given-names: Yongming
+  journal: "Machine Learning for Computational Science and Engineering"
+  volume: "2"
+  start: "37"
+  year: 2026
+  doi: "10.1007/s44379-026-00087-7"

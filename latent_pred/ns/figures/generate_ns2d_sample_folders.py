@@ -20,7 +20,7 @@ import torch.nn.functional as F
 
 
 THIS_FILE = Path(__file__).resolve()
-WORKSPACE = THIS_FILE.parents[2]
+WORKSPACE = THIS_FILE.parents[3]
 DEFAULT_OUTPUT_DIR = THIS_FILE.parent / "sample_folders"
 
 FULL_KEY = "ns_noise_5000_161_64_64"
@@ -30,13 +30,13 @@ AE_LATENT_KEY = "u_latent_fno_d150_m12_w1"
 FOAE_TRUNK_KEY = "trunk_DPN_d150_fno"
 OAE_TRUNK_KEY = "trunk_DPN_d150"
 
-FOAE_REDUCTION_MODEL = "DPN_d150_fno.pth"
-OAE_REDUCTION_MODEL = "DPN_d150.pth"
-AE_REDUCTION_MODEL = "fno_d150_m12_w1"
+FOAE_REDUCTION_MODEL = "FOAE_d150_ns.pth"
+OAE_REDUCTION_MODEL = "OAE_d150_ns.pth"
+AE_REDUCTION_MODEL = "AE_d150_ns.pth"
 
-FOAE_TEMPORAL_MODEL = "ns2d_N4900_p18_m76_1e0pi_DPN_d150_fno"
-OAE_TEMPORAL_MODEL = "ns2d_N4900_p18_m76_1e0pi_DPN_d150"
-AE_TEMPORAL_MODEL = "ns2d_N4900_p18_5e-1pi_fno_d150_m12_w1"
+FOAE_TEMPORAL_MODEL = "FOAE_d150_ns_latent.pt"
+OAE_TEMPORAL_MODEL = "OAE_d150_ns_latent.pt"
+AE_TEMPORAL_MODEL = "AE_d150_ns_latent.pt"
 
 CMAP_NAME = "RdBu"  # low values red, high values blue, white near the middle
 IMAGE_SCALE = 8  # 64x64 fields become 512x512 images while preserving the 2D field aspect.
@@ -129,8 +129,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Export NS2D reconstruction and latent-prediction sample folders for F-OAE/OAE/AE."
     )
-    parser.add_argument("--dm-root", type=Path, default=None, help="Path to DM-2dns. Auto-detected by default.")
-    parser.add_argument("--ae-root", type=Path, default=None, help="Path to AE-2dns. Auto-detected by default.")
+    parser.add_argument("--dm-root", type=Path, default=WORKSPACE, help="OAE project root.")
+    parser.add_argument("--ae-root", type=Path, default=WORKSPACE, help="AE project root.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--seed", type=int, default=SEED)
     parser.add_argument("--image-scale", type=int, default=IMAGE_SCALE)
@@ -148,18 +148,7 @@ def autodetect_root(name: str, provided: Path | None) -> Path:
         if not root.exists():
             raise FileNotFoundError(f"{name} root does not exist: {root}")
         return root
-    candidates = [
-        WORKSPACE / name,
-        WORKSPACE / "DM-2d" / name,
-        THIS_FILE.parent / name,
-        THIS_FILE.parent.parent / name,
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate.resolve()
-    raise FileNotFoundError(
-        f"Could not find {name}. Pass --{'dm' if name.startswith('DM') else 'ae'}-root explicitly."
-    )
+    return WORKSPACE
 
 
 def resolve_existing(base: Path, name: str) -> Path:
@@ -299,9 +288,9 @@ def load_ae_reduction_model(ae_root: Path, device: torch.device, model_name: str
     reduction_dir = ae_root / "reduction"
     sys.path.insert(0, str(reduction_dir))
     try:
-        __import__("nn")
+        from checkpoint_utils import load_reduction_checkpoint
         model_path = resolve_existing(reduction_dir / "models", model_name)
-        model = load_pickled_model(model_path, device)
+        model = load_reduction_checkpoint(model_path, 'ns', 'AE', device)
         for parameter in model.parameters():
             parameter.requires_grad_(False)
         return model, model_path
@@ -379,10 +368,10 @@ def sample_pairs(rng: np.random.Generator, start: int, stop: int, n_samples: int
 @torch.no_grad()
 def main() -> None:
     args = parse_args()
-    dm_root = autodetect_root("DM-2dns", args.dm_root)
-    ae_root = autodetect_root("AE-2dns", args.ae_root)
-    dm_data_path = dm_root / "reduction" / "data" / "data.hdf5"
-    ae_data_path = ae_root / "reduction" / "data" / "data.hdf5"
+    dm_root = autodetect_root("OAE", args.dm_root)
+    ae_root = autodetect_root("AE", args.ae_root)
+    dm_data_path = dm_root / "reduction" / "data" / "data_ns.h5df"
+    ae_data_path = ae_root / "reduction" / "data" / "data_ns.h5df"
     if not dm_data_path.exists():
         raise FileNotFoundError(dm_data_path)
     if not ae_data_path.exists():
@@ -393,9 +382,9 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     temporal_paths = {
-        "foae": resolve_existing(dm_root / "latent_pred" / "model", FOAE_TEMPORAL_MODEL),
-        "oae": resolve_existing(dm_root / "latent_pred" / "model", OAE_TEMPORAL_MODEL),
-        "ae": resolve_existing(ae_root / "latent_pred" / "model", AE_TEMPORAL_MODEL),
+        "foae": resolve_existing(dm_root / "latent_pred" / "ns" / "models", FOAE_TEMPORAL_MODEL),
+        "oae": resolve_existing(dm_root / "latent_pred" / "ns" / "models", OAE_TEMPORAL_MODEL),
+        "ae": resolve_existing(ae_root / "latent_pred" / "ns" / "models", AE_TEMPORAL_MODEL),
     }
     temporal = {method: load_pickled_model(path, device) for method, path in temporal_paths.items()}
     ae_decoder, ae_reduction_path = load_ae_reduction_model(ae_root, device, AE_REDUCTION_MODEL)

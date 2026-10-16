@@ -1,19 +1,21 @@
 import torch
 import numpy as np
 import sys
-sys.path.append('../')
-from nn import DPN
+from pathlib import Path
+REDUCTION_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REDUCTION_DIR))
+from checkpoint_utils import load_reduction_checkpoint
 import h5py
 import matplotlib.pyplot as plt
 import time
-time.sleep(3800)
 
-model_name = "DPN_d10_fno.pth"
+
+model_name = "DPN_d50_fno.pth"
 name_without_ext = model_name.rsplit(".pth", 1)[0]
-model = torch.load(model_name)
+model = load_reduction_checkpoint(REDUCTION_DIR / 'models' / 'FOAE_d50_kdv.pth', 'kdv', 'FOAE')
 model.eval()
 
-file_path = "../data/data.hdf5"
+file_path = REDUCTION_DIR / 'data' / 'data_kdv.h5df'
 with h5py.File(file_path, 'r') as f:
     u = f['kdv_5000_501_512'][:]
 b = u.shape[0]
@@ -37,7 +39,7 @@ with h5py.File(file_path, 'a') as hdf:
     else:
         hdf.create_dataset(dataset, data=u_latent, dtype='float32')
 
-trunk_out = model.trunk(u_test.cuda()).detach().cpu().permute(1, 0).numpy().astype(np.float32)
+trunk_out = model.trunk(next(model.parameters()).device).detach().cpu().permute(1, 0).numpy().astype(np.float32)
 dataset_trunk = f'trunk_{name_without_ext}'
 with h5py.File(file_path, 'a') as hdf:
     if dataset_trunk in hdf:

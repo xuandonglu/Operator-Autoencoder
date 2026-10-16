@@ -8,16 +8,18 @@ import matplotlib.pyplot as plt
 import time
 from sklearn.decomposition import PCA
 from latent import SpectralConv2d_fast, FNO
+from pathlib import Path
+CASE_DIR = Path(__file__).resolve().parent
 
 ntest = 100
 batch_size = 1
-path_model = 'model/wave1d_N4900_p501_m16_DPN_d30'
-reduction_model = path_model.rsplit("m16_", 1)[1]
+path_model = CASE_DIR / 'models' / 'FOAE_d30_wave_latent.pt'
+reduction_model = 'DPN_d30_fno'
 
 ################################################################
 # load data
 ################################################################
-with h5py.File('../reduction/data/data.hdf5', 'r') as f:
+with h5py.File(CASE_DIR.parents[1] / 'reduction' / 'data' / 'data_wave.h5df', 'r') as f:
     u = f['wave_5000_501_256'][:]
     u_latent = f[f'latent_{reduction_model}'][:]
     tr = f[f'trunk_{reduction_model}'][:]

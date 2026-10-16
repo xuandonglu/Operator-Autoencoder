@@ -1,10 +1,12 @@
+from pathlib import Path
+CASE_DIR = Path(__file__).resolve().parent
 import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import h5py
 from timeit import default_timer
-from utilities3 import *
+from utilities3 import UnitGaussianNormalizer
 import matplotlib.pyplot as plt
 import time
 from sklearn.decomposition import PCA
@@ -113,11 +115,13 @@ if __name__ == '__main__':
     pi_weight = '1e-2'
     path_model = 'model/kdv1d_' + f'N{ntrain}_' + \
                  f'p{len(model.train_grid)}' + f'_m{model.modes1}' + f'_{pi_weight}pi' + f'_{reduction_model}'
+    path_model = CASE_DIR / path_model
+    path_model.parent.mkdir(parents=True, exist_ok=True)
 
     ################################################################
     # load data
     ################################################################
-    with h5py.File('../reduction/data/data.hdf5', 'r') as f:
+    with h5py.File(CASE_DIR.parents[1] / 'reduction' / 'data' / 'data_kdv.h5df', 'r') as f:
         u = f['kdv_5000_501_512'][:]
         u_latent = f[f'latent_{reduction_model}'][:]
         tr = f[f'trunk_{reduction_model}'][:]
@@ -147,7 +151,6 @@ if __name__ == '__main__':
     test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(test_x, test_y), batch_size=batch_size)
     device = torch.device('cuda')
     tr = torch.from_numpy(tr).float().to(device)
-    tr_x, tr_xxx = derivative_x(tr)
 
     ################################################################
     # training and evaluation
@@ -167,11 +170,12 @@ if __name__ == '__main__':
             out = model(x.permute(0, 2, 1, 3)).permute(0, 2, 1)
             mse = MSELoss(out[:, model.train_grid], y)
             # out = y_normalizer.decode(out)
-            zt = derivative_t(out)
-            orig = torch.einsum("bti,io->bto", out, tr)[:, 1:-1, 2:-2]
-            ut = torch.einsum("bti,io->bto", zt, tr)[:, 1:-1, 2:-2]
-            ux = torch.einsum("bti,io->bto", out, tr_x)[:, 1:-1, 2:-2]
-            uxxx = torch.einsum("bti,io->bto", out, tr_xxx)[:, 1:-1, 2:-2]
+            full_out = torch.einsum("bti,io->bto", out, tr)
+            ut = derivative_t(full_out)[:, 1:-1, 2:-2]
+            ux, uxxx = derivative_x(full_out)
+            orig = full_out[:, 1:-1, 2:-2]
+            ux = ux[:, 1:-1, 2:-2]
+            uxxx = uxxx[:, 1:-1, 2:-2]
             lp = MSELoss(ut + 6 * orig * ux, -0.001 * uxxx)
             loss = mse + float(pi_weight) * lp
             loss.backward()

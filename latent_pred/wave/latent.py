@@ -1,10 +1,12 @@
+from pathlib import Path
+CASE_DIR = Path(__file__).resolve().parent
 import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import h5py
 from timeit import default_timer
-from utilities3 import *
+
 import matplotlib.pyplot as plt
 import time
 from sklearn.decomposition import PCA
@@ -111,11 +113,13 @@ if __name__ == '__main__':
     pi_weight = '1e0'
     path_model = 'model/wave1d_' + f'N{ntrain}_' + \
                  f'p{len(model.train_grid)}' + f'_m{model.modes1}' + f'_{reduction_model}'
+    path_model = CASE_DIR / path_model
+    path_model.parent.mkdir(parents=True, exist_ok=True)
 
     ################################################################
     # load data
     ################################################################
-    with h5py.File('../reduction/data/data.hdf5', 'r') as f:
+    with h5py.File(CASE_DIR.parents[1] / 'reduction' / 'data' / 'data_wave.h5df', 'r') as f:
         u = f['wave_5000_501_256'][:]
         u_latent = f[f'latent_{reduction_model}'][:]
         tr = f[f'trunk_{reduction_model}'][:]

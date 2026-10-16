@@ -22,13 +22,12 @@ THIS_FILE = Path(__file__).resolve()
 OAE_ROOT = THIS_FILE.parents[3]
 WORKSPACE = OAE_ROOT.parent
 OUT_DIR = THIS_FILE.parent
-# Legacy source roots are kept only for pickled class imports.
-DM_ROOT = WORKSPACE / "DM-2d" / "DM-1dwave"
-AE_ROOT = WORKSPACE / "DM-2d" / "AE-1dwave"
+DM_ROOT = OAE_ROOT
+AE_ROOT = OAE_ROOT
 DM_DATA = OAE_ROOT / "reduction" / "data" / "data_wave.h5df"
 AE_DATA = DM_DATA
-DM_LATENT_DIR = DM_ROOT / "latent_pred"
-AE_LATENT_DIR = AE_ROOT / "latent_pred"
+DM_LATENT_DIR = DM_ROOT / "latent_pred" / "wave"
+AE_LATENT_DIR = AE_ROOT / "latent_pred" / "wave"
 AE_REDUCTION_DIR = AE_ROOT / "reduction"
 AE_REDUCTION_MODEL = OAE_ROOT / "reduction" / "models" / "AE_d30_wave.pth"
 F_OAE_TEMPORAL = OAE_ROOT / "latent_pred" / "wave" / "models" / "FOAE_d30_wave_latent.pt"
@@ -214,9 +213,9 @@ def save_sample_outputs(
 
 def load_ae_reduction_model(device: torch.device) -> nn.Module:
     sys.path.insert(0, str(AE_REDUCTION_DIR))
-    from nn import AE  # noqa: F401 - needed when loading the pickled model
+    from checkpoint_utils import load_reduction_checkpoint
 
-    model = torch.load(AE_REDUCTION_MODEL, map_location=device, weights_only=False).to(device)
+    model = load_reduction_checkpoint(AE_REDUCTION_MODEL, 'wave', 'AE', device)
     model.eval()
     return model
 

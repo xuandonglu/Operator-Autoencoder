@@ -8,16 +8,18 @@ import matplotlib.pyplot as plt
 import time
 from sklearn.decomposition import PCA
 from latent import SpectralConv2d_fast, FNO
+from pathlib import Path
+CASE_DIR = Path(__file__).resolve().parent
 
 ntest = 1
 batch_size = 1
-path_model = 'model/kdv1d_N4900_p11_m26_1e-3pi_DPN_d50'
-reduction_model = path_model.rsplit("DPN", 1)[1]
+path_model = CASE_DIR / 'models' / 'OAE_d50_kdv_latent.pt'
+reduction_model = '_d50'
 
 ################################################################
 # load data
 ################################################################
-with h5py.File('../reduction/data/data.hdf5', 'r') as f:
+with h5py.File(CASE_DIR.parents[1] / 'reduction' / 'data' / 'data_kdv.h5df', 'r') as f:
     u = f['kdv_5000_501_512'][:]
     u_latent = f[f'latent_DPN{reduction_model}'][:]
     tr = f[f'trunk_DPN{reduction_model}'][:]

@@ -1,61 +1,49 @@
-OAE consolidated case workspace
-================================
+# Operator Autoencoder
 
-This folder collects the current OAE / FOAE / AE case assets under one
-project-level layout:
+Code accompanying **Decoder-free operator autoencoder for reduced-order
+modeling of dynamical systems**, by Xuandong Lu and Yongming Liu.
 
-- `reduction/`: full-field data, reduction network definitions, trained
-  reduction checkpoints, load-test scripts, and latent-output scripts.
-- `latent_pred/`: case-specific latent prediction scripts, latent checkpoints,
-  result summaries, and figure-generation folders.
+Machine Learning for Computational Science and Engineering, 2, 37 (2026).
+[Paper](https://doi.org/10.1007/s44379-026-00087-7).
 
-Large HDF5 data files were moved into `reduction/data` rather than copied.
-The original legacy data paths therefore no longer contain those files.
+The implementation includes conventional autoencoders (AE), operator
+autoencoders (OAE), and Fourier-enhanced operator autoencoders (F-OAE) for
+the wave, KdV, Navier-Stokes, and cylinder wake cases.
 
-Current case status
--------------------
+## Installation
 
-| case | status | notes |
-| --- | --- | --- |
-| cylinder | available | data, OAE/FOAE/AE reduction models, latent models, and sample folders are consolidated. |
-| kdv | available | data and selected d50 reduction/latent models are consolidated; figure folders were copied. |
-| wave | available | data and selected d30 reduction/latent models are consolidated; figure folders and timing script were copied. |
-| ns | available | reduction/latent models and figure folders are consolidated. |
+Use Python 3.10 or later:
 
-Naming convention
------------------
+```bash
+pip install -r requirements.txt
+```
 
-Reduction checkpoints use:
+The original training scripts target a CUDA-enabled PyTorch installation.
 
-`{METHOD}_d{TOTAL_LATENT_DIM}_{CASE}.pth`
+## Code Layout
 
-Examples:
+- `reduction/nn_*.py`: reduction network architectures.
+- `reduction/main.py`: reduction training entry point.
+- `reduction/configs.py`: reduction training configuration.
+- `reduction/models/*.py`: reconstruction evaluation and latent extraction.
+- `latent_pred/<case>/latent*.py`: latent dynamics training and evaluation.
+- `latent_pred/cylinder/train_latent_hist10_to10_2dfno.py`: cylinder dynamics training.
+- `latent_pred/<case>/*timing*.py`: training and inference timing utilities.
+- `latent_pred/<case>/figures/*.py`: plotting utilities.
 
-- `FOAE_d140_cylinder.pth`
-- `OAE_d140_cylinder.pth`
-- `AE_d140_cylinder.pth`
-- `FOAE_d50_kdv.pth`
-- `OAE_d30_wave.pth`
-- `FOAE_d150_ns.pth`
-- `OAE_d150_ns.pth`
-- `AE_d150_ns.pth`
+Run scripts from their respective case folders. Experiment settings remain
+at the top of each script.
 
-Latent-prediction checkpoints use the same prefix plus `_latent.pt`, for
-example `FOAE_d140_cylinder_latent.pt`.
+## Citation
 
-HDF5 dataset keys
------------------
-
-The HDF5 files still keep the legacy dataset keys such as
-`latent_DPN_d80_fno_cylinder`, `trunk_DPN_d80_cylinder`, or
-`latent_fno_d50_m20_w1`. This preserves compatibility with the already trained
-latent-prediction scripts and plotting code.
-
-Known compatibility note
-------------------------
-
-Some copied KDV/Wave plotting scripts still contain legacy import assumptions
-from their original folders. The data and selected checkpoints are now in this
-folder, but if those scripts are run again they may need a small path/import
-cleanup for the pickled model classes. Cylinder has been adjusted first because
-it is the most recent active 2D case.
+```bibtex
+@article{lu2026decoder,
+  title={Decoder-free operator autoencoder for reduced-order modeling of dynamical systems},
+  author={Lu, Xuandong and Liu, Yongming},
+  journal={Machine Learning for Computational Science and Engineering},
+  volume={2},
+  pages={37},
+  year={2026},
+  doi={10.1007/s44379-026-00087-7}
+}
+```

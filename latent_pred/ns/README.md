@@ -1,21 +1,7 @@
-NS case
-=======
+# Navier-Stokes
 
-The NS case is consolidated under the common OAE layout.
+`latent.py` trains OAE/F-OAE latent dynamics, and `latent_ae.py` trains the
+AE baseline. The corresponding `latent_test*.py` scripts evaluate predictions.
 
-Contents:
-
-- `figures/generate_ns2d_sample_folders.py`
-- `sample_folders/`
-- `models/FOAE_d150_ns_latent.pt`
-- `models/OAE_d150_ns_latent.pt`
-- `models/AE_d150_ns_latent.pt`
-- `latent.py`, `latent_test.py`, and AE-side latent scripts
-
-The reduction checkpoints are already mapped in `../../reduction/models`:
-
-- `FOAE_d150_ns.pth`
-- `OAE_d150_ns.pth`
-- `AE_d150_ns.pth`
-
-Data-dependent scripts use `../../reduction/data/data_ns.h5df`.
+`training_timing_fair.py` runs the timing harness.
+`latent*_timing.py` provides individual timing entry points.

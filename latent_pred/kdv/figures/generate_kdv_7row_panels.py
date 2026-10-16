@@ -23,9 +23,8 @@ OUT_DIR = THIS_FILE.parent
 RECON_DIR = OUT_DIR / "reconstruction"
 LATENT_DIR = OUT_DIR / "latent_prediction"
 
-# Legacy source roots are kept only for pickled class imports.
-DM_ROOT = REPO_ROOT / "DM-1dkdv"
-AE_ROOT = REPO_ROOT / "AE-1dkdv"
+DM_ROOT = OAE_ROOT
+AE_ROOT = OAE_ROOT
 
 DM_DATA = OAE_ROOT / "reduction" / "data" / "data_kdv.h5df"
 AE_DATA = DM_DATA
@@ -139,9 +138,9 @@ def prepend_path(path: Path) -> None:
 
 
 def load_dpn_reduction_model(filename: str):
-    sys.modules.pop("nn", None)
     prepend_path(DM_ROOT / "reduction")
-    model = safe_torch_load(DM_REDUCTION_MODELS / filename)
+    from checkpoint_utils import load_reduction_checkpoint
+    model = load_reduction_checkpoint(DM_REDUCTION_MODELS / filename, 'kdv', 'OAE', 'cpu')
     model.eval()
     for p in model.parameters():
         p.requires_grad_(False)
@@ -149,9 +148,9 @@ def load_dpn_reduction_model(filename: str):
 
 
 def load_ae_reduction_model(filename: str):
-    sys.modules.pop("nn", None)
     prepend_path(AE_ROOT / "reduction")
-    model = safe_torch_load(AE_REDUCTION_MODELS / filename)
+    from checkpoint_utils import load_reduction_checkpoint
+    model = load_reduction_checkpoint(AE_REDUCTION_MODELS / filename, 'kdv', 'AE', 'cpu')
     model.eval()
     for p in model.parameters():
         p.requires_grad_(False)
@@ -159,7 +158,7 @@ def load_ae_reduction_model(filename: str):
 
 
 def load_dm_latent_model(filename: str):
-    prepend_path(DM_ROOT / "latent_pred")
+    prepend_path(DM_ROOT / "latent_pred" / "kdv")
     model = safe_torch_load(DM_LATENT_MODELS / filename)
     model.eval()
     for p in model.parameters():
@@ -168,7 +167,7 @@ def load_dm_latent_model(filename: str):
 
 
 def load_ae_latent_model(filename: str):
-    prepend_path(AE_ROOT / "latent_pred")
+    prepend_path(AE_ROOT / "latent_pred" / "kdv")
     model = safe_torch_load(AE_LATENT_MODELS / filename)
     model.eval()
     for p in model.parameters():

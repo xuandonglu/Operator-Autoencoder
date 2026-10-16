@@ -2,16 +2,13 @@ import torch
 from torch import nn
 import sys
 import numpy as np
-sys.path.append('../')
-from nn import AE
+from pathlib import Path
+REDUCTION_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REDUCTION_DIR))
+from checkpoint_utils import load_reduction_checkpoint
 import h5py
 import matplotlib.pyplot as plt
 import scipy.io as io
-
-def rrmse(prediction, target):
-    numerator = torch.sum((prediction - target) ** 2)
-    denominator = torch.sum(target ** 2)
-    return torch.sqrt(numerator / denominator)
 
 MSELoss = nn.MSELoss(reduction='mean')
 def loss_function(reconstruction, data):
@@ -21,12 +18,12 @@ def loss_function(reconstruction, data):
     mse = MSELoss(reconstruction, data)
     msexx = MSELoss(uxx, uxx1)
     msett = MSELoss(utt, utt1)
-    for i in range(21):
-        plt.plot(utt[0, i*25, 1:-1].detach())
-        plt.plot(utt1[0, i*25, 1:-1].detach())
-        plt.plot(uxx[0, i * 25, 1:-1].detach())
-        plt.plot(uxx1[0, i * 25, 1:-1].detach())
-        plt.title(i*15)
+    for time_idx in range(0, min(utt.shape[1], uxx.shape[1]), 25):
+        plt.plot(utt[0, time_idx, 1:-1].detach())
+        plt.plot(utt1[0, time_idx, 1:-1].detach())
+        plt.plot(uxx[0, time_idx, 1:-1].detach())
+        plt.plot(uxx1[0, time_idx, 1:-1].detach())
+        plt.title(time_idx)
         plt.show()
     return mse, msett, msexx
 
@@ -55,13 +52,13 @@ def rrmse_utt(u, u1):
     e = rrmse(utt, utt1)
     return e
 
-model = torch.load("fno_d6_m36_w1_1e+00_1e-02.pth")
+model = load_reduction_checkpoint(REDUCTION_DIR / 'models' / 'AE_d30_wave.pth', 'wave', 'AE')
 model.eval()
 
 b = 1
 T = 501
 S = 256
-with h5py.File('../data/data.hdf5', 'r') as f:
+with h5py.File(REDUCTION_DIR / 'data' / 'data_wave.h5df', 'r') as f:
     u = f['wave_5000_501_256'][:]
 u = u[-b:, ...]
 u = np.reshape(u, [u.shape[0] * u.shape[1], 1, u.shape[-1]])

@@ -12,13 +12,13 @@ import torch
 THIS_FILE = Path(__file__).resolve()
 MODELS_DIR = THIS_FILE.parent
 REDUCTION_DIR = MODELS_DIR.parent
-DEFAULT_DATA_PATH = REDUCTION_DIR / "data" / "data.hdf5"
-DEFAULT_MODEL_PATH = MODELS_DIR / "fno_d30.pth"
+DEFAULT_DATA_PATH = REDUCTION_DIR / "data" / "data_wave.h5df"
+DEFAULT_MODEL_PATH = MODELS_DIR / "AE_d30_wave.pth"
 FULL_KEY = "wave_5000_501_256"
 LATENT_KEY = "latent_AE_d30"
 
 sys.path.insert(0, str(REDUCTION_DIR))
-from nn import AE  # noqa: E402,F401 - needed when loading the pickled model
+from checkpoint_utils import load_reduction_checkpoint
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,7 +41,7 @@ def resolve_device(name: str) -> torch.device:
 def main() -> None:
     args = parse_args()
     device = resolve_device(args.device)
-    model = torch.load(args.model_path, map_location=device, weights_only=False).to(device)
+    model = load_reduction_checkpoint(args.model_path, 'wave', 'AE', device)
     model.eval()
     for parameter in model.parameters():
         parameter.requires_grad_(False)

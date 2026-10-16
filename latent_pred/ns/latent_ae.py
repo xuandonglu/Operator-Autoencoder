@@ -1,8 +1,11 @@
+from pathlib import Path
+CASE_DIR = Path(__file__).resolve().parent
 import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-from utilities3 import *
+from utilities3 import UnitGaussianNormalizer
+import h5py
 from timeit import default_timer
 import matplotlib.pyplot as plt
 import torch.fft as fft
@@ -117,14 +120,16 @@ if __name__ == '__main__':
     reduction_model = 'fno_d150_m12_w1'
     pi_weight = '5e-1'
     path_model = 'model/ns2d_' + f'N{ntrain}_' + f'p{len(train_grid)}' + f'_{pi_weight}pi_{reduction_model}'
+    path_model = CASE_DIR / path_model
+    path_model.parent.mkdir(parents=True, exist_ok=True)
 
     ################################################################
     # load derivative models
     ################################################################
     import sys
-    sys.path.append('../reduction')
-    from nn import AE
-    AE = torch.load(f"../reduction/models/{reduction_model}.pth", weights_only=False)
+    sys.path.insert(0, str(CASE_DIR.parents[1] / 'reduction'))
+    from checkpoint_utils import load_reduction_checkpoint
+    AE = load_reduction_checkpoint(CASE_DIR.parents[1] / 'reduction' / 'models' / 'AE_d150_ns.pth', 'ns', 'AE')
     AE.eval()
     for param in AE.parameters():
         param.requires_grad = False
@@ -132,7 +137,7 @@ if __name__ == '__main__':
     ################################################################
     # load data
     ################################################################
-    with h5py.File('../reduction/data/data.hdf5', 'r') as f:
+    with h5py.File(CASE_DIR.parents[1] / 'reduction' / 'data' / 'data_ns.h5df', 'r') as f:
         u = f['ns_noise_5000_161_64_64'][:]
         u_latent = f[f'u_latent_{reduction_model}'][:]
         f = f['f'][:]

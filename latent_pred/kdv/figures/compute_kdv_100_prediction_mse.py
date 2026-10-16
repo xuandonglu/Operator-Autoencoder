@@ -26,10 +26,10 @@ def main() -> None:
     sys.modules["__main__"].FNO = FNO
     sys.modules["__main__"].SpectralConv2d_fast = SpectralConv2d_fast
     torch.set_num_threads(4)
-    ae = load_ae_reduction_model("fno_d50_m20_w1.pth")
-    latent_foae = load_dm_latent_model("kdv1d_N4900_p11_m26_1e-1pi_DPN_d50_fno")
-    latent_oae = load_dm_latent_model("kdv1d_N4900_p11_m26_1e-3pi_DPN_d50")
-    latent_ae = load_ae_latent_model("kdv1d_sr_N4900_p11_m26_1e1pi_fno_d50_m20_w1")
+    ae = load_ae_reduction_model("AE_d50_kdv.pth")
+    latent_foae = load_dm_latent_model("FOAE_d50_kdv_latent.pt")
+    latent_oae = load_dm_latent_model("OAE_d50_kdv_latent.pt")
+    latent_ae = load_ae_latent_model("AE_d50_kdv_latent.pt")
     sums = {"foae": 0.0, "oae": 0.0, "ae": 0.0}
     count = 0
     with h5py.File(DM_DATA, "r") as f_dm, h5py.File(AE_DATA, "r") as f_ae:

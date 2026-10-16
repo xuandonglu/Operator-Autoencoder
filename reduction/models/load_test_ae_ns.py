@@ -3,14 +3,15 @@ from torch import nn
 import scipy.io as io
 import sys
 import numpy as np
-sys.path.append('../')
-from nn import AE
+from pathlib import Path
+REDUCTION_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REDUCTION_DIR))
+from checkpoint_utils import load_reduction_checkpoint
 import h5py
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import random
 import torch.fft as fft
-import scipy.io as io
 
 def rrmse(prediction, target):
     numerator = torch.sum((prediction - target) ** 2)
@@ -68,11 +69,11 @@ def pde_residual(u):
     e = lhs - rhs
     return e
 
-model = torch.load("fno_d150_m12_w1.pth", weights_only=False)
+model = load_reduction_checkpoint(REDUCTION_DIR / 'models' / 'AE_d150_ns.pth', 'ns', 'AE')
 model.eval()
 
 b = 1
-with h5py.File('../data/data.hdf5', 'r') as f:
+with h5py.File(REDUCTION_DIR / 'data' / 'data_ns.h5df', 'r') as f:
     u_clean = f['ns_5000_161_64_64'][:][-b:]
     f = f['f'][:]
 f = torch.from_numpy(f.astype(np.float32)).unsqueeze(0)

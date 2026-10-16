@@ -3,19 +3,21 @@ from torch import nn
 import scipy.io as io
 import numpy as np
 import sys
-sys.path.append('../')
-from nn import AE as ae
+from pathlib import Path
+REDUCTION_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REDUCTION_DIR))
+from checkpoint_utils import load_reduction_checkpoint
 import h5py
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
-model = torch.load("fno_d150_m12_w1.pth", weights_only=False)
+model = load_reduction_checkpoint(REDUCTION_DIR / 'models' / 'AE_d150_ns.pth', 'ns', 'AE')
 model.eval()
 
 b = 5000
 T = 161
 S = 64
-file_path = '../data/data.hdf5'
+file_path = REDUCTION_DIR / 'data' / 'data_ns.h5df'
 with h5py.File(file_path, 'r') as f:
     u = f['ns_noise_5000_161_64_64'][:]
 train_grid = np.linspace(0, T-1, num=T).astype(int)

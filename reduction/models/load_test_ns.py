@@ -2,8 +2,10 @@ import torch
 from torch import nn
 import sys
 import numpy as np
-sys.path.append('../')
-from nn import DPN
+from pathlib import Path
+REDUCTION_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REDUCTION_DIR))
+from checkpoint_utils import load_reduction_checkpoint
 import h5py
 import matplotlib.pyplot as plt
 import torch.fft as fft
@@ -76,11 +78,11 @@ def derivative_t(u):
     utt[:, -1] = (2 * u[:, -1] - 5 * u[:, -2] + 4 * u[:, -3] - u[:, -4]) / dt ** 2
     return utt
 
-model = torch.load('DPN_d150_fno.pth', weights_only=False)
+model = load_reduction_checkpoint(REDUCTION_DIR / 'models' / 'FOAE_d150_ns.pth', 'ns', 'FOAE')
 model.eval()
 
 b = 1
-with h5py.File('../data/data.hdf5', 'r') as f:
+with h5py.File(REDUCTION_DIR / 'data' / 'data_ns.h5df', 'r') as f:
     u_clean = f['ns_5000_161_64_64'][:][-b:]
     f = f['f'][:]
 f = torch.from_numpy(f.astype(np.float32)).unsqueeze(0)

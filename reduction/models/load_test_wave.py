@@ -2,8 +2,23 @@ import torch
 from torch import nn
 import sys
 import numpy as np
-sys.path.append('../')
-from nn import DPN
+from pathlib import Path
+
+THIS_FILE = Path(__file__).resolve()
+MODELS_DIR = THIS_FILE.parent
+REDUCTION_DIR = MODELS_DIR.parent
+sys.path.insert(0, str(REDUCTION_DIR))
+
+import nn_wave  # noqa: E402
+from nn_wave import DPN  # noqa: E402
+
+# Older checkpoints were pickled when the model module was named "nn".
+sys.modules.setdefault('nn', nn_wave)
+globals()['DPN'] = nn_wave.DPN
+globals()['FNO1'] = nn_wave.FNO1
+globals()['FNO2'] = nn_wave.FNO2
+globals()['ResidualBlock'] = nn_wave.ResidualBlock
+globals()['SpectralConv1d'] = nn_wave.SpectralConv1d
 import h5py
 import matplotlib.pyplot as plt
 
@@ -69,11 +84,13 @@ def derivative_t(u):
     utt[:, -1] = (2 * u[:, -1] - 5 * u[:, -2] + 4 * u[:, -3] - u[:, -4]) / dt ** 2
     return utt
 
-model = torch.load('DPN_d4.pth')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model_path = MODELS_DIR / 'FOAE_d30_wave.pth'
+model = torch.load(model_path, map_location=device, weights_only=False).to(device)
 model.eval()
 
 b = 100
-with h5py.File('../data/data.hdf5', 'r') as f:
+with h5py.File(REDUCTION_DIR / 'data' / 'data_wave.h5df', 'r') as f:
     u_clean = f['wave_5000_501_256'][:][-b:]
     u = f['wave_5000_501_256'][:][-b:]
 T = u_clean.shape[1]
@@ -83,8 +100,10 @@ u = np.reshape(u, [b * T, S])
 u = torch.from_numpy(u.astype(np.float32))
 u_clean = torch.from_numpy(u_clean.astype(np.float32))
 u_rec = torch.zeros_like(u)
-for i in range(b):
-    u_rec[i*T:(i+1)*T] = model(u[i*T:(i+1)*T, ...].cuda()).cpu()
+with torch.no_grad():
+    for i in range(b):
+        single_sample = u[i*T:(i+1)*T, ...].to(device)
+        u_rec[i*T:(i+1)*T] = model(single_sample).detach().cpu()
 u_rec = u_rec.reshape([b, T, S])
 u_clean = np.reshape(u_clean, [b, T, S])
 u = np.reshape(u, [b, T, S])

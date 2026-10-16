@@ -2,13 +2,13 @@ import torch
 from torch import nn
 import sys
 import numpy as np
-sys.path.append('../../nd')
-sys.path.append('../')
-from nn import AE
+from pathlib import Path
+REDUCTION_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REDUCTION_DIR))
+from checkpoint_utils import load_reduction_checkpoint
 import h5py
 import matplotlib.pyplot as plt
 import scipy.io as io
-from dpn_derivative import DIFF, dudx, d3udx3
 
 def rrmse(prediction, target):
     numerator = torch.sum((prediction - target) ** 2)
@@ -48,13 +48,6 @@ def derivative(u):
     ut[:, 1:-1, :] = (u[:, 2:, :] - u[:, :-2, :]) / 2 / dt
     return ut, ux, uxx, uxxx
 
-def pde_residual_nd(u):
-    ut, _, _, _ = derivative(u)
-    ux = diff_x(u.reshape([b*T, S]).cuda()).reshape([b, T, S]).cpu()
-    uxxx = diff_xxx(u.reshape([b*T, S]).cuda()).reshape([b, T, S]).cpu()
-    e = ut + 6 * u * ux + uxxx
-    return e
-
 def pde_residual(u):
     ut, ux, uxx, uxxx = derivative(u)
     e = ut + 6 * u * ux + 0.001 * uxxx
@@ -66,22 +59,12 @@ def rrmse_uxxx(u, u1):
     e = rrmse(uxxx, uxxx1)
     return e
 
-model = torch.load("fno_d20_m20_w1.pth")
+model = load_reduction_checkpoint(REDUCTION_DIR / 'models' / 'AE_d50_kdv.pth', 'kdv', 'AE')
 model.eval()
-diff_xxx = torch.load("../../nd/dpn_uxxx_50_N900_p11")
-diff_xxx.eval()
-for param in diff_xxx.parameters():
-    param.requires_grad = False
-
-diff_x = torch.load("../../nd/dpn_ux_50_N900_p11")
-diff_x.eval()
-for param in diff_x.parameters():
-    param.requires_grad = False
-
 b = 100
 T = 501
 S = 512
-with h5py.File('../data/data.hdf5', 'r') as f:
+with h5py.File(REDUCTION_DIR / 'data' / 'data_kdv.h5df', 'r') as f:
     u = f['kdv_5000_501_512'][:]
 u = u[-b:, ...]
 u = np.reshape(u, [u.shape[0] * u.shape[1], 1, u.shape[-1]])

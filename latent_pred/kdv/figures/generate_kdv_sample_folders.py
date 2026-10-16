@@ -184,13 +184,13 @@ def main() -> None:
     torch.set_num_threads(4)
     selected = load_selected_samples()
 
-    dpn_fno = load_dpn_reduction_model("DPN_d50_fno.pth")
-    dpn_plain = load_dpn_reduction_model("DPN_d50.pth")
-    ae = load_ae_reduction_model("fno_d50_m20_w1.pth")
+    dpn_fno = load_dpn_reduction_model("FOAE_d50_kdv.pth")
+    dpn_plain = load_dpn_reduction_model("OAE_d50_kdv.pth")
+    ae = load_ae_reduction_model("AE_d50_kdv.pth")
 
-    latent_fno = load_dm_latent_model("kdv1d_N4900_p11_m26_1e-1pi_DPN_d50_fno")
-    latent_plain = load_dm_latent_model("kdv1d_N4900_p11_m26_1e-3pi_DPN_d50")
-    latent_ae = load_ae_latent_model("kdv1d_sr_N4900_p11_m26_1e1pi_fno_d50_m20_w1")
+    latent_fno = load_dm_latent_model("FOAE_d50_kdv_latent.pt")
+    latent_plain = load_dm_latent_model("OAE_d50_kdv_latent.pt")
+    latent_ae = load_ae_latent_model("AE_d50_kdv_latent.pt")
 
     summary = {
         "selected_sample_indices_zero_based": selected,

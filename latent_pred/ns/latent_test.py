@@ -7,17 +7,19 @@ from timeit import default_timer
 import matplotlib.pyplot as plt
 import scipy.io as io
 from latent import SpectralConv2d_fast, FNO, derivative_t, derivative
+from pathlib import Path
+CASE_DIR = Path(__file__).resolve().parent
 
 ntest = 100
 batch_size = 1
 train_grid = torch.arange(0, 161, step=20)
-path_model = 'model/ns2d_N4900_p9_m51'
-reduction_model = path_model.rsplit("pi_", 1)[1]
+path_model = CASE_DIR / 'models' / 'OAE_d150_ns_latent.pt'
+reduction_model = 'DPN_d150'
 
 ################################################################
 # load data
 ################################################################
-with h5py.File('../reduction/data/data.hdf5', 'r') as f:
+with h5py.File(CASE_DIR.parents[1] / 'reduction' / 'data' / 'data_ns.h5df', 'r') as f:
     u = f['ns_5000_161_64_64'][:]
     u_latent = f[f'latent_{reduction_model}'][:]
     tr = f[f'trunk_{reduction_model}'][:]

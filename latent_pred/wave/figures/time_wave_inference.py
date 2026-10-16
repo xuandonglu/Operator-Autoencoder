@@ -33,7 +33,7 @@ from generate_wave_sample_folders import (
 
 THIS_FILE = Path(__file__).resolve()
 WORKSPACE = OAE_ROOT.parent
-DM_REDUCTION_DIR = WORKSPACE / "DM-2d" / "DM-1dwave" / "reduction"
+DM_REDUCTION_DIR = OAE_ROOT / "reduction"
 DM_REDUCTION_MODELS = OAE_ROOT / "reduction" / "models"
 OUT_PATH = THIS_FILE.parent / "wave_inference_timing_1000.json"
 
@@ -72,8 +72,9 @@ def timed(device: torch.device, fn) -> tuple[float, object]:
 def load_pickled_model_with_nn(model_path: Path, nn_dir: Path, device: torch.device):
     sys.path.insert(0, str(nn_dir))
     try:
-        __import__("nn")
-        model = torch.load(model_path, map_location=device, weights_only=False).to(device)
+        from checkpoint_utils import load_reduction_checkpoint
+        method = 'AE' if model_path.name.startswith('AE_') else 'OAE'
+        model = load_reduction_checkpoint(model_path, 'wave', method, device)
         model.eval()
         return model
     finally:

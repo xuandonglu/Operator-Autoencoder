@@ -1,3 +1,5 @@
+from pathlib import Path
+CASE_DIR = Path(__file__).resolve().parent
 import torch
 import numpy as np
 import torch.nn as nn
@@ -8,7 +10,7 @@ import h5py
 from timeit import default_timer
 import matplotlib.pyplot as plt
 import time
-from utilities3 import *
+from utilities3 import UnitGaussianNormalizer
 device = torch.device('cuda')
 
 def derivative(u):
@@ -122,11 +124,13 @@ if __name__ == '__main__':
     pi_weight = '1e0'
     path_model = 'model/ns2d_' + f'N{ntrain}_' + \
                  f'p{len(model.train_grid)}' + f'_m{model.modes1}' + f'_{pi_weight}pi_{reduction_model}'
+    path_model = CASE_DIR / path_model
+    path_model.parent.mkdir(parents=True, exist_ok=True)
 
     ################################################################
     # load data
     ################################################################
-    with h5py.File('../reduction/data/data.hdf5', 'r') as f:
+    with h5py.File(CASE_DIR.parents[1] / 'reduction' / 'data' / 'data_ns.h5df', 'r') as f:
         u = f['ns_noise_5000_161_64_64'][:]
         u_latent = f[f'latent_{reduction_model}'][:]
         tr = f[f'trunk_{reduction_model}'][:]

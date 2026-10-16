@@ -1,9 +1,4 @@
-Reduction data files
-====================
+# Preprocessing Utilities
 
-Case data entries:
-
-- `data_cylinder.h5df`
-- `data_kdv.h5df`
-- `data_wave.h5df`
-- `data_ns.h5df`
+`ns2d/` contains the Navier-Stokes simulation code.
+`prepare_temp_cylinder_x_mask.py` extracts the cylinder x-velocity and mask.
